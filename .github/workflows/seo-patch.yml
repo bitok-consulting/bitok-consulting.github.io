@@ -1,0 +1,61 @@
+name: SEO one-time patch
+
+on:
+  push:
+    paths:
+      - '.github/workflows/seo-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch homepage SEO
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = {
+              '<title>Биток-консалтинг — обмен USDT ⇄ RUB в Нижневартовске</title>': '<title>Обмен USDT на рубли в Нижневартовске — Биток-консалтинг</title>',
+              '<meta name="description" content="Биток-консалтинг: обмен USDT на рубли и рублей на USDT, BTC, ETH, международные переводы и SWIFT. Нижневартовск и ХМАО. Работаем с 2019 года.">': '<meta name="description" content="Обмен USDT на рубли и покупка USDT за рубли в Нижневартовске. Биток-консалтинг: BTC, ETH, SWIFT и международные переводы. Работаем с 2019 года.">',
+              '<meta property="og:type" content="website"><meta property="og:locale" content="ru_RU"><meta property="og:title" content="Биток-консалтинг — USDT ⇄ RUB"><meta property="og:description" content="Обмен USDT ⇄ RUB, международные переводы и SWIFT в Нижневартовске."><meta property="og:url" content="https://evsavelev.github.io/"><meta property="og:image" content="https://evsavelev.github.io/assets/crypto-bg.svg">': '<meta property="og:type" content="website"><meta property="og:locale" content="ru_RU"><meta property="og:site_name" content="Биток-консалтинг"><meta property="og:title" content="Обмен USDT на рубли в Нижневартовске — Биток-консалтинг"><meta property="og:description" content="Обмен USDT ⇄ RUB, BTC, ETH, международные переводы и SWIFT в Нижневартовске."><meta property="og:url" content="https://bitok-consulting.github.io/"><meta property="og:image" content="https://bitok-consulting.github.io/assets/crypto-bg.svg">',
+              '<h1>Обмен <span class="gold">USDT ⇄ RUB</span><br>быстро и понятно</h1>': '<h1>Обмен <span class="gold">USDT ⇄ RUB</span><br>в Нижневартовске</h1>',
+              '<p class="lead">Обмен USDT на рубли и рублей на USDT. Также BTC, ETH, международные переводы и SWIFT. Курс и условия согласовываем заранее.</p>': '<p class="lead">Биток-консалтинг — криптообменник в Нижневартовске: обмен USDT на рубли и покупка USDT за рубли. Также BTC, ETH, международные переводы и SWIFT. Курс и условия согласовываем заранее.</p>',
+              '<h3>USDT → RUB</h3><p>Обмен USDT на рубли.</p>': '<h3>Обмен USDT на рубли</h3><p>Согласовываем актуальный курс и условия перед сделкой.</p>',
+              '<h3>RUB → USDT</h3><p>Покупка USDT за рубли.</p>': '<h3>Купить USDT за рубли</h3><p>Покупка USDT за рубли по заранее согласованному курсу.</p>',
+              '<h3>SWIFT</h3><p>Международные переводы и расчёты.</p>': '<h3>Международные переводы / SWIFT</h3><p>Международные переводы и расчёты по согласованным направлениям.</p>'
+          }
+
+          for old, new in replacements.items():
+              if old in s:
+                  s = s.replace(old, new, 1)
+
+          seo_block = '''\n<link rel="canonical" href="https://bitok-consulting.github.io/">\n<link rel="sitemap" type="application/xml" href="https://bitok-consulting.github.io/sitemap.xml">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:title" content="Обмен USDT на рубли в Нижневартовске — Биток-консалтинг">\n<meta name="twitter:description" content="USDT ⇄ RUB, BTC, ETH, SWIFT и международные переводы в Нижневартовске.">\n<meta name="twitter:image" content="https://bitok-consulting.github.io/assets/crypto-bg.svg">\n<script type="application/ld+json">\n{\n  "@context": "https://schema.org",\n  "@type": "FinancialService",\n  "@id": "https://bitok-consulting.github.io/#business",\n  "name": "Биток-консалтинг",\n  "url": "https://bitok-consulting.github.io/",\n  "telephone": "+7-904-870-11-22",\n  "email": "avsavelev.region@gmail.com",\n  "description": "Обмен USDT на рубли и покупка USDT за рубли в Нижневартовске, консультации по криптовалюте, международные переводы и SWIFT.",\n  "foundingDate": "2019",\n  "address": {\n    "@type": "PostalAddress",\n    "streetAddress": "ул. Ленина, 15 ст3, 1 этаж",\n    "addressLocality": "Нижневартовск",\n    "addressRegion": "Ханты-Мансийский автономный округ — Югра",\n    "addressCountry": "RU"\n  },\n  "openingHours": "Mo-Su 00:00-23:59",\n  "areaServed": ["Нижневартовск", "Ханты-Мансийский автономный округ — Югра"],\n  "sameAs": [\n    "https://vk.com/bitcoinobmennic",\n    "https://2gis.ru/nizhnevartovsk/firm/70000001100769448",\n    "https://yandex.com/maps/org/bitkoin_obmennik/28912170282/"\n  ],\n  "hasOfferCatalog": {\n    "@type": "OfferCatalog",\n    "name": "Услуги Биток-консалтинг",\n    "itemListElement": [\n      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Обмен USDT на рубли"}},\n      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Покупка USDT за рубли"}},\n      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Международные переводы и SWIFT"}},\n      {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Консультация по криптокошельку"}}\n    ]\n  }\n}\n</script>'''
+
+          marker = '<link rel="icon" href="favicon.svg" type="image/svg+xml">'
+          if 'rel="canonical" href="https://bitok-consulting.github.io/"' not in s and marker in s:
+              s = s.replace(marker, seo_block + '\n' + marker, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit patched homepage
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "SEO: canonical metadata local schema and search intent"
+          git push
