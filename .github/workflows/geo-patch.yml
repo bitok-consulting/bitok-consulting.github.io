@@ -1,0 +1,43 @@
+name: SEO geography patch
+
+on:
+  push:
+    paths:
+      - '.github/workflows/geo-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add geography section and areaServed
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          old_nav = '<a href="#reviews">Отзывы</a><a href="#request">Заявка</a><a href="#contacts">Контакты</a>'
+          new_nav = '<a href="#reviews">Отзывы</a><a href="#geo">Города</a><a href="#request">Заявка</a><a href="#contacts">Контакты</a>'
+          s = s.replace(old_nav, new_nav, 1)
+
+          marker = '<section id="request">'
+          geo = '''<section id="geo"><div class="wrap"><div class="head"><div><span class="tag">География</span><h2>Работаем с клиентами из Нижневартовска и других городов Севера</h2></div><p>Основной офис — в Нижневартовске. Клиенты из других городов могут заранее связаться, согласовать курс, условия и формат операции.</p></div><div class="services"><div class="card"><div class="ico">●</div><h3>Ближайшие к Нижневартовску</h3><p>Нижневартовск · Излучинск · Мегион · Лангепас · Покачи · Радужный</p></div><div class="card"><div class="ico">Ю</div><h3>ХМАО — Югра</h3><p>Сургут · Когалым · Нефтеюганск · Пыть-Ях · Нягань · Урай · Ханты-Мансийск · Югорск · Белоярский · Лянтор · Советский</p></div><div class="card"><div class="ico">Я</div><h3>ЯНАО и северные города</h3><p>Ноябрьск · Новый Уренгой. Для поездки или дистанционного сценария условия лучше согласовать заранее.</p></div></div></div></section>'''
+          if marker in s and 'id="geo"' not in s:
+              s = s.replace(marker, geo + '\n' + marker, 1)
+
+          # Expand structured-data service area without implying offices in each city.
+          if '"areaServed"' in s:
+              import re
+              s = re.sub(r'"areaServed"\s*:\s*\[[^\]]*\]', '"areaServed": ["Нижневартовск", "Излучинск", "Мегион", "Лангепас", "Покачи", "Радужный", "Сургут", "Когалым", "Нефтеюганск", "Пыть-Ях", "Нягань", "Урай", "Ханты-Мансийск", "Югорск", "Белоярский", "Лянтор", "Советский", "Ноябрьск", "Новый Уренгой"]', s, count=1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "SEO: add service geography and nearby cities"
+          git push
